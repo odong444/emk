@@ -802,10 +802,9 @@
             }
         };
 
-        // Firebase v9+ getDownloadURL을 활용한 파일 다운로드 (개선된 버전)
+        // Firebase 파일을 실제로 PC에 다운로드
         async function downloadFileFromFirebase(file, customFileName = null) {
             try {
-                // 이미 URL이 있다면 직접 사용, 없다면 새로 생성
                 let downloadURL = file.downloadURL;
                 if (!downloadURL && file.ref) {
                     downloadURL = await getDownloadURL(file.ref);
@@ -816,73 +815,60 @@
                 }
 
                 const fileName = customFileName || file.name;
-                console.log(`📥 다운로드 시작: ${fileName}`);
+                console.log(`📥 실제 다운로드 시작: ${fileName}`);
 
-                // 방법 1: 직접 링크 열기 (가장 안정적)
-                try {
-                    const link = document.createElement('a');
-                    link.href = downloadURL;
-                    link.download = fileName;
-                    link.target = '_blank';
-                    link.rel = 'noopener noreferrer';
-                    
-                    // 사용자 제스처 컨텍스트에서 실행
-                    document.body.appendChild(link);
-                    
-                    // 강제 클릭 이벤트 생성
-                    const clickEvent = new MouseEvent('click', {
-                        view: window,
-                        bubbles: true,
-                        cancelable: true
-                    });
-                    link.dispatchEvent(clickEvent);
-                    
-                    document.body.removeChild(link);
-                    
-                    console.log(`✅ 다운로드 링크 클릭: ${fileName}`);
-                    return true;
-                    
-                } catch (linkError) {
-                    console.log('직접 링크 방식 실패, fetch 방식으로 전환');
-                    
-                    // 방법 2: Fetch + Blob (백업 방식)
-                    const response = await fetch(downloadURL);
-                    if (!response.ok) {
-                        throw new Error(`HTTP 오류: ${response.status}`);
+                // Fetch로 파일 바이너리 데이터 가져오기
+                const response = await fetch(downloadURL, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Accept': '*/*'
                     }
+                });
 
-                    const blob = await response.blob();
-                    
-                    // Blob URL 생성 및 다운로드
-                    const blobUrl = window.URL.createObjectURL(blob);
-                    const blobLink = document.createElement('a');
-                    blobLink.href = blobUrl;
-                    blobLink.download = fileName;
-                    blobLink.style.display = 'none';
-                    
-                    document.body.appendChild(blobLink);
-                    blobLink.click();
-                    document.body.removeChild(blobLink);
-                    
-                    // URL 해제
-                    setTimeout(() => {
-                        window.URL.revokeObjectURL(blobUrl);
-                    }, 1000);
-
-                    console.log(`✅ Blob 다운로드 완료: ${fileName}`);
-                    return true;
+                if (!response.ok) {
+                    throw new Error(`HTTP 오류: ${response.status} - ${response.statusText}`);
                 }
+
+                // 실제 파일 바이너리를 Blob으로 변환
+                const blob = await response.blob();
+                console.log(`📦 파일 데이터 로드 완료: ${fileName} (${formatFileSize(blob.size)})`);
+
+                // Blob URL 생성
+                const blobUrl = window.URL.createObjectURL(blob);
+
+                // 다운로드 링크 생성 (숨김)
+                const downloadLink = document.createElement('a');
+                downloadLink.style.display = 'none';
+                downloadLink.href = blobUrl;
+                downloadLink.download = fileName; // 이게 핵심! download 속성
+                downloadLink.setAttribute('download', fileName); // 명시적으로 설정
+                
+                // DOM에 추가하고 클릭
+                document.body.appendChild(downloadLink);
+                
+                // 클릭 이벤트 강제 실행
+                downloadLink.click();
+                
+                // 정리
+                document.body.removeChild(downloadLink);
+                
+                // 메모리 정리 (1초 후)
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(blobUrl);
+                }, 1000);
+
+                console.log(`✅ PC 다운로드 완료: ${fileName}`);
+                return true;
 
             } catch (error) {
                 console.error(`❌ 파일 다운로드 실패: ${file.name}`, error);
                 
-                // 방법 3: 새 탭에서 열기 (최후 수단)
+                // 실패 시에만 새 탭으로 열기
                 try {
-                    if (file.downloadURL) {
-                        window.open(file.downloadURL, '_blank');
-                        console.log(`🔗 새 탭에서 열기: ${file.name}`);
-                        return true;
-                    }
+                    console.log('🔄 새 탭으로 파일 열기...');
+                    window.open(file.downloadURL, '_blank');
                 } catch (tabError) {
                     console.error('새 탭 열기도 실패:', tabError);
                 }
@@ -967,7 +953,7 @@
             }, 1000);
         }
 
-        // 단일 파일 다운로드
+        // 단일 파일 다운로드 (테스트용)
         window.downloadSingleFile = async function(productName, conceptName, fileName) {
             const product = allData[productName];
             const concept = product?.concepts.find(c => c.name === conceptName);
@@ -978,14 +964,19 @@
                 return;
             }
 
+            console.log(`🎯 단일 파일 다운로드 요청: ${fileName}`);
             showDownloadModal(`${fileName} 다운로드`, 1);
-            const success = await downloadFileFromFirebase(file);
+            
+            // 파일명에 컨셉명 포함
+            const customFileName = `${conceptName}_${fileName}`;
+            const success = await downloadFileFromFirebase(file, customFileName);
+            
             hideDownloadModal();
 
             if (success) {
-                console.log(`✅ 파일 다운로드 완료: ${fileName}`);
+                console.log(`✅ 파일 다운로드 완료: ${customFileName}`);
             } else {
-                alert(`❌ 파일 다운로드 실패: ${fileName}`);
+                alert(`❌ 파일 다운로드 실패: ${fileName}\n\n개발자 도구(F12)의 Console 탭에서 오류를 확인해보세요.`);
             }
         };
 
