@@ -1112,6 +1112,9 @@
                     
                     const conceptCounts = concepts.filter(c => c.files.length > 0).length;
                     
+                    // 성공 알림창 띄우기
+                    alert(`🎉 업로드 완료!\n\n✅ ${successful}개 파일 업로드 성공\n👤 제출자: ${submitterName}\n📦 제품: ${selectedProduct}\n🎨 컨셉: ${conceptCounts}개\n⚡ 평균 속도: ${speed.toFixed(1)} MB/s\n\n업로드가 완료되었습니다!`);
+                    
                     showStatusMessage('success', 
                         `🎉 업로드 완료!\n` +
                         `성공: ${successful}개${failed > 0 ? `, 실패: ${failed}개` : ''}\n` +
