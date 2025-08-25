@@ -1,0 +1,35 @@
+# .github/workflows/deploy.yml
+name: 🚀 Auto Deploy to Firebase Hosting
+
+on:
+  push:
+    branches: [ main ]  # main 브랜치에 push할 때 자동 배포
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 코드 체크아웃
+      uses: actions/checkout@v4
+    
+    - name: 🔧 Node.js 설정
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: 📦 의존성 설치
+      run: npm install -g firebase-tools
+    
+    - name: 🚀 Firebase에 배포
+      env:
+        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      run: |
+        firebase deploy --only hosting --token "$FIREBASE_TOKEN"
+    
+    - name: 📢 배포 완료 알림
+      run: |
+        echo "✅ 배포 완료!"
+        echo "🌐 사이트 주소: https://upload-emk.web.app"
