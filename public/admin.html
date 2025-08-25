@@ -488,6 +488,9 @@
             <!-- 일괄 다운로드 -->
             <div class="bulk-download">
                 <h3>🚀 모든 파일 한번에 다운로드</h3>
+                <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">
+                    ⚠️ 많은 파일을 다운로드할 때는 브라우저에서 팝업을 허용해주세요
+                </p>
                 <button class="bulk-download-btn" onclick="downloadAll()" id="downloadAllBtn" disabled>
                     📥 전체 파일 다운로드 (<span id="totalFileCount">0</span>개)
                 </button>
@@ -799,7 +802,7 @@
             }
         };
 
-        // Firebase v9+ getDownloadURL을 활용한 파일 다운로드
+        // Firebase v9+ getDownloadURL을 활용한 파일 다운로드 (개선된 버전)
         async function downloadFileFromFirebase(file, customFileName = null) {
             try {
                 // 이미 URL이 있다면 직접 사용, 없다면 새로 생성
@@ -812,77 +815,155 @@
                     throw new Error('다운로드 URL을 생성할 수 없습니다.');
                 }
 
-                // Fetch로 파일 데이터 가져오기
-                const response = await fetch(downloadURL);
-                if (!response.ok) {
-                    throw new Error(`HTTP 오류: ${response.status}`);
+                const fileName = customFileName || file.name;
+                console.log(`📥 다운로드 시작: ${fileName}`);
+
+                // 방법 1: 직접 링크 열기 (가장 안정적)
+                try {
+                    const link = document.createElement('a');
+                    link.href = downloadURL;
+                    link.download = fileName;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    
+                    // 사용자 제스처 컨텍스트에서 실행
+                    document.body.appendChild(link);
+                    
+                    // 강제 클릭 이벤트 생성
+                    const clickEvent = new MouseEvent('click', {
+                        view: window,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    link.dispatchEvent(clickEvent);
+                    
+                    document.body.removeChild(link);
+                    
+                    console.log(`✅ 다운로드 링크 클릭: ${fileName}`);
+                    return true;
+                    
+                } catch (linkError) {
+                    console.log('직접 링크 방식 실패, fetch 방식으로 전환');
+                    
+                    // 방법 2: Fetch + Blob (백업 방식)
+                    const response = await fetch(downloadURL);
+                    if (!response.ok) {
+                        throw new Error(`HTTP 오류: ${response.status}`);
+                    }
+
+                    const blob = await response.blob();
+                    
+                    // Blob URL 생성 및 다운로드
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    const blobLink = document.createElement('a');
+                    blobLink.href = blobUrl;
+                    blobLink.download = fileName;
+                    blobLink.style.display = 'none';
+                    
+                    document.body.appendChild(blobLink);
+                    blobLink.click();
+                    document.body.removeChild(blobLink);
+                    
+                    // URL 해제
+                    setTimeout(() => {
+                        window.URL.revokeObjectURL(blobUrl);
+                    }, 1000);
+
+                    console.log(`✅ Blob 다운로드 완료: ${fileName}`);
+                    return true;
                 }
 
-                const blob = await response.blob();
-                
-                // 다운로드 링크 생성 및 클릭
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = customFileName || file.name;
-                link.style.display = 'none';
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                // URL 해제
-                setTimeout(() => {
-                    window.URL.revokeObjectURL(url);
-                }, 100);
-
-                return true;
             } catch (error) {
-                console.error(`파일 다운로드 실패: ${file.name}`, error);
+                console.error(`❌ 파일 다운로드 실패: ${file.name}`, error);
+                
+                // 방법 3: 새 탭에서 열기 (최후 수단)
+                try {
+                    if (file.downloadURL) {
+                        window.open(file.downloadURL, '_blank');
+                        console.log(`🔗 새 탭에서 열기: ${file.name}`);
+                        return true;
+                    }
+                } catch (tabError) {
+                    console.error('새 탭 열기도 실패:', tabError);
+                }
+                
                 return false;
             }
         }
 
-        // 여러 파일 다운로드
+        // 여러 파일 다운로드 (개선된 버전)
         async function downloadMultipleFiles(files, title) {
             if (!files || files.length === 0) {
                 alert('다운로드할 파일이 없습니다.');
                 return;
             }
 
+            // 브라우저 팝업 차단 경고
+            if (files.length > 1) {
+                const userConfirm = confirm(
+                    `${files.length}개 파일을 다운로드합니다.\n\n` +
+                    `⚠️ 브라우저에서 팝업을 차단하고 있다면:\n` +
+                    `1. 브라우저 주소창의 팝업 차단 아이콘을 클릭\n` +
+                    `2. "항상 허용"을 선택\n` +
+                    `3. 페이지를 새로고침 후 다시 시도\n\n` +
+                    `계속하시겠습니까?`
+                );
+                
+                if (!userConfirm) return;
+            }
+
             showDownloadModal(title, files.length);
             
             let completed = 0;
             let failed = 0;
+            const failedFiles = [];
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                updateDownloadStatus(`다운로드 중: ${file.name}`);
+                updateDownloadStatus(`다운로드 중 (${i + 1}/${files.length}): ${file.name}`);
+                
+                console.log(`📥 ${i + 1}/${files.length} 다운로드 시작: ${file.name}`);
                 
                 const success = await downloadFileFromFirebase(file);
                 
                 if (success) {
                     completed++;
+                    console.log(`✅ 다운로드 성공 (${completed}/${files.length}): ${file.name}`);
                 } else {
                     failed++;
+                    failedFiles.push(file.name);
+                    console.log(`❌ 다운로드 실패 (${failed}/${files.length}): ${file.name}`);
                 }
                 
                 updateDownloadProgress(completed + failed, files.length);
                 
-                // 브라우저 다운로드 제한 방지를 위한 딜레이
+                // 브라우저 다운로드 제한 방지를 위한 딜레이 (더 긴 간격)
                 if (i < files.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, 800));
                 }
             }
 
             // 결과 표시
             setTimeout(() => {
                 hideDownloadModal();
+                
+                let message = `📊 다운로드 완료 결과:\n\n`;
+                message += `✅ 성공: ${completed}개\n`;
+                
                 if (failed > 0) {
-                    alert(`⚠️ 다운로드 완료!\n성공: ${completed}개, 실패: ${failed}개`);
-                } else {
-                    alert(`✅ ${completed}개 파일이 모두 다운로드되었습니다!`);
+                    message += `❌ 실패: ${failed}개\n\n`;
+                    message += `실패한 파일들:\n${failedFiles.join('\n')}`;
+                    
+                    if (failed === files.length) {
+                        message += `\n\n🛠️ 문제 해결 방법:\n`;
+                        message += `1. 브라우저 팝업 차단 해제\n`;
+                        message += `2. 다운로드 권한 허용\n`;
+                        message += `3. 인터넷 연결 확인\n`;
+                        message += `4. 개별 파일로 다운로드 시도`;
+                    }
                 }
+                
+                alert(message);
             }, 1000);
         }
 
