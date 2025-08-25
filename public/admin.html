@@ -379,6 +379,48 @@
             border-left: 4px solid #dc3545;
         }
 
+        .file-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-name {
+            flex: 1;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .file-size {
+            font-size: 0.8em;
+            color: #6c757d;
+        }
+
+        .download-individual-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            cursor: pointer;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -394,6 +436,18 @@
             
             .main-content {
                 padding: 20px;
+            }
+
+            .product-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .concept-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
             }
         }
     </style>
@@ -435,7 +489,7 @@
             <div class="bulk-download">
                 <h3>🚀 모든 파일 한번에 다운로드</h3>
                 <button class="bulk-download-btn" onclick="downloadAll()" id="downloadAllBtn" disabled>
-                    📥 전체 파일 다운로드
+                    📥 전체 파일 다운로드 (<span id="totalFileCount">0</span>개)
                 </button>
             </div>
 
@@ -475,10 +529,17 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK v9+ -->
     <script type="module">
+        // Firebase v9+ 모듈 import
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-        import { getStorage, ref, listAll, getDownloadURL, getMetadata } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js';
+        import { 
+            getStorage, 
+            ref, 
+            listAll, 
+            getDownloadURL, 
+            getMetadata 
+        } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js';
 
         // Firebase 설정
         const firebaseConfig = {
@@ -525,7 +586,7 @@
                 const rootRef = ref(storage, 'product-photos');
                 const rootList = await listAll(rootRef);
                 
-                console.log('📁 루트 폴더 스캔 중...');
+                console.log('📁 루트 폴더 스캔 중...', rootList.prefixes);
                 const productData = {};
                 let totalFiles = 0;
                 let totalSize = 0;
@@ -557,27 +618,49 @@
                         const files = [];
                         let conceptSize = 0;
 
-                        // 파일별 정보 수집
+                        // 파일별 정보 수집 - Firebase v9+ getDownloadURL 사용
                         for (const fileRef of conceptList.items) {
                             try {
-                                const metadata = await getMetadata(fileRef);
-                                const downloadURL = await getDownloadURL(fileRef);
+                                // getMetadata와 getDownloadURL을 병렬로 실행
+                                const [metadata, downloadURL] = await Promise.all([
+                                    getMetadata(fileRef),
+                                    getDownloadURL(fileRef)
+                                ]);
                                 
-                                files.push({
+                                const file = {
                                     name: fileRef.name,
                                     fullPath: fileRef.fullPath,
                                     downloadURL: downloadURL,
-                                    size: metadata.size,
+                                    size: metadata.size || 0,
                                     timeCreated: metadata.timeCreated,
-                                    contentType: metadata.contentType
-                                });
+                                    contentType: metadata.contentType || 'application/octet-stream',
+                                    ref: fileRef // Firebase reference 보관
+                                };
                                 
-                                conceptSize += metadata.size;
+                                files.push(file);
+                                conceptSize += file.size;
                                 totalFiles++;
-                                totalSize += metadata.size;
+                                totalSize += file.size;
+                                
+                                console.log(`✅ 파일 로드: ${file.name} (${formatFileSize(file.size)})`);
                                 
                             } catch (error) {
-                                console.warn(`⚠️ 파일 메타데이터 로드 실패: ${fileRef.fullPath}`);
+                                console.warn(`⚠️ 파일 로드 실패: ${fileRef.fullPath}`, error);
+                                // 실패한 파일도 기본 정보로 포함
+                                try {
+                                    const downloadURL = await getDownloadURL(fileRef);
+                                    files.push({
+                                        name: fileRef.name,
+                                        fullPath: fileRef.fullPath,
+                                        downloadURL: downloadURL,
+                                        size: 0,
+                                        timeCreated: new Date().toISOString(),
+                                        contentType: 'application/octet-stream',
+                                        ref: fileRef
+                                    });
+                                } catch (urlError) {
+                                    console.error(`❌ URL 생성 실패: ${fileRef.fullPath}`, urlError);
+                                }
                             }
                         }
 
@@ -589,7 +672,9 @@
                                 files: files,
                                 fileCount: files.length,
                                 totalSize: conceptSize,
-                                lastModified: Math.max(...files.map(f => new Date(f.timeCreated).getTime()))
+                                lastModified: files.length > 0 ? 
+                                    Math.max(...files.map(f => new Date(f.timeCreated).getTime())) : 
+                                    Date.now()
                             });
 
                             productData[productName].totalFiles += files.length;
@@ -598,7 +683,9 @@
                     }
 
                     // 컨셉을 최신순으로 정렬
-                    productData[productName].concepts.sort((a, b) => b.lastModified - a.lastModified);
+                    if (productData[productName].concepts.length > 0) {
+                        productData[productName].concepts.sort((a, b) => b.lastModified - a.lastModified);
+                    }
                 }
 
                 // 전역 데이터 저장
@@ -616,10 +703,11 @@
                 // UI 업데이트
                 renderProducts();
                 
-                console.log('✅ 모든 데이터 로드 완료');
+                console.log('✅ 모든 데이터 로드 완료', allData);
                 document.getElementById('loadingIndicator').style.display = 'none';
                 document.getElementById('productsContainer').style.display = 'block';
                 document.getElementById('downloadAllBtn').disabled = false;
+                document.getElementById('totalFileCount').textContent = totalFiles;
                 
             } catch (error) {
                 console.error('❌ 데이터 로드 실패:', error);
@@ -648,10 +736,10 @@
                         <div>
                             <div class="product-title">
                                 ${getProductIcon(productName)} ${productName}
-                                <span class="product-info">(${productInfo.concepts.length}개 컨셉, ${formatFileSize(productInfo.totalSize)})</span>
+                                <span class="product-info">(${productInfo.concepts.length}개 컨셉, ${productInfo.totalFiles}개 파일, ${formatFileSize(productInfo.totalSize)})</span>
                             </div>
                         </div>
-                        <div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
                             <button class="download-btn" onclick="event.stopPropagation(); downloadProduct('${productName}')">
                                 📥 전체 다운로드
                             </button>
@@ -678,9 +766,20 @@
                             ${formatFileSize(concept.totalSize)} | 
                             ${new Date(concept.lastModified).toLocaleDateString()}
                         </div>
+                        <div class="file-list">
+                            ${concept.files.map(file => `
+                                <div class="file-item">
+                                    <span class="file-name">${getFileIcon(file.contentType)} ${file.name}</span>
+                                    <span class="file-size">${formatFileSize(file.size)}</span>
+                                    <button class="download-individual-btn" onclick="downloadSingleFile('${concept.productName}', '${concept.name}', '${file.name}')">
+                                        ⬇️
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
                     <button class="download-btn" onclick="downloadConcept('${concept.productName}', '${concept.name}')">
-                        📥 다운로드
+                        📥 컨셉 전체
                     </button>
                 </div>
             `).join('');
@@ -700,8 +799,52 @@
             }
         };
 
-        // 파일 다운로드 함수들
-        async function downloadFiles(files, title) {
+        // Firebase v9+ getDownloadURL을 활용한 파일 다운로드
+        async function downloadFileFromFirebase(file, customFileName = null) {
+            try {
+                // 이미 URL이 있다면 직접 사용, 없다면 새로 생성
+                let downloadURL = file.downloadURL;
+                if (!downloadURL && file.ref) {
+                    downloadURL = await getDownloadURL(file.ref);
+                }
+
+                if (!downloadURL) {
+                    throw new Error('다운로드 URL을 생성할 수 없습니다.');
+                }
+
+                // Fetch로 파일 데이터 가져오기
+                const response = await fetch(downloadURL);
+                if (!response.ok) {
+                    throw new Error(`HTTP 오류: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                
+                // 다운로드 링크 생성 및 클릭
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = customFileName || file.name;
+                link.style.display = 'none';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // URL 해제
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+
+                return true;
+            } catch (error) {
+                console.error(`파일 다운로드 실패: ${file.name}`, error);
+                return false;
+            }
+        }
+
+        // 여러 파일 다운로드
+        async function downloadMultipleFiles(files, title) {
             if (!files || files.length === 0) {
                 alert('다운로드할 파일이 없습니다.');
                 return;
@@ -710,44 +853,60 @@
             showDownloadModal(title, files.length);
             
             let completed = 0;
-            let errors = [];
+            let failed = 0;
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                try {
-                    // 브라우저 다운로드 방식 사용
-                    const link = document.createElement('a');
-                    link.href = file.downloadURL;
-                    link.download = file.name;
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    
+                updateDownloadStatus(`다운로드 중: ${file.name}`);
+                
+                const success = await downloadFileFromFirebase(file);
+                
+                if (success) {
                     completed++;
-                    updateDownloadProgress(completed, files.length);
-                    
-                    // 다운로드 간격 (브라우저 제한 방지)
-                    if (i < files.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 300));
-                    }
-                    
-                } catch (error) {
-                    console.error(`파일 다운로드 실패: ${file.name}`, error);
-                    errors.push(file.name);
+                } else {
+                    failed++;
+                }
+                
+                updateDownloadProgress(completed + failed, files.length);
+                
+                // 브라우저 다운로드 제한 방지를 위한 딜레이
+                if (i < files.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
 
             // 결과 표시
             setTimeout(() => {
                 hideDownloadModal();
-                if (errors.length > 0) {
-                    alert(`⚠️ ${completed}개 파일이 다운로드되었습니다.\n실패: ${errors.length}개 파일`);
+                if (failed > 0) {
+                    alert(`⚠️ 다운로드 완료!\n성공: ${completed}개, 실패: ${failed}개`);
                 } else {
                     alert(`✅ ${completed}개 파일이 모두 다운로드되었습니다!`);
                 }
             }, 1000);
         }
+
+        // 단일 파일 다운로드
+        window.downloadSingleFile = async function(productName, conceptName, fileName) {
+            const product = allData[productName];
+            const concept = product?.concepts.find(c => c.name === conceptName);
+            const file = concept?.files.find(f => f.name === fileName);
+            
+            if (!file) {
+                alert('파일을 찾을 수 없습니다.');
+                return;
+            }
+
+            showDownloadModal(`${fileName} 다운로드`, 1);
+            const success = await downloadFileFromFirebase(file);
+            hideDownloadModal();
+
+            if (success) {
+                console.log(`✅ 파일 다운로드 완료: ${fileName}`);
+            } else {
+                alert(`❌ 파일 다운로드 실패: ${fileName}`);
+            }
+        };
 
         // 컨셉 다운로드
         window.downloadConcept = function(productName, conceptName) {
@@ -759,7 +918,7 @@
                 return;
             }
 
-            downloadFiles(concept.files, `${conceptName} 다운로드`);
+            downloadMultipleFiles(concept.files, `${conceptName} 다운로드`);
         };
 
         // 제품 전체 다운로드
@@ -770,18 +929,30 @@
                 return;
             }
 
-            const allFiles = product.concepts.flatMap(concept => concept.files);
-            downloadFiles(allFiles, `${productName} 전체 다운로드`);
+            const allFiles = product.concepts.flatMap(concept => 
+                concept.files.map(file => ({
+                    ...file,
+                    name: `${concept.name}_${file.name}` // 컨셉명_파일명 형태로 저장
+                }))
+            );
+            
+            downloadMultipleFiles(allFiles, `${productName} 전체 다운로드`);
         };
 
         // 전체 다운로드
         window.downloadAll = function() {
-            const allFiles = Object.values(allData)
-                .flatMap(product => product.concepts)
-                .flatMap(concept => concept.files);
+            const allFiles = Object.entries(allData)
+                .flatMap(([productName, product]) => 
+                    product.concepts.flatMap(concept => 
+                        concept.files.map(file => ({
+                            ...file,
+                            name: `${productName}_${concept.name}_${file.name}` // 제품명_컨셉명_파일명
+                        }))
+                    )
+                );
             
-            if (confirm(`총 ${allFiles.length}개 파일을 다운로드하시겠습니까?`)) {
-                downloadFiles(allFiles, '전체 파일 다운로드');
+            if (confirm(`총 ${allFiles.length}개 파일을 다운로드하시겠습니까?\n파일명 형식: 제품명_컨셉명_원본파일명`)) {
+                downloadMultipleFiles(allFiles, '전체 파일 다운로드');
             }
         };
 
@@ -807,6 +978,11 @@
             const percentage = Math.round((current / total) * 100);
             statusEl.textContent = `${current} / ${total} 파일 완료 (${percentage}%)`;
             progressEl.style.width = percentage + '%';
+        }
+
+        function updateDownloadStatus(message) {
+            const statusEl = document.getElementById('downloadStatus');
+            statusEl.textContent = message;
         }
 
         function hideDownloadModal() {
@@ -872,10 +1048,18 @@
             return icons[productName] || '📦';
         }
 
+        function getFileIcon(contentType) {
+            if (!contentType) return '📄';
+            if (contentType.startsWith('image/')) return '🖼️';
+            if (contentType.startsWith('video/')) return '🎬';
+            if (contentType.startsWith('audio/')) return '🎵';
+            return '📄';
+        }
+
         function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
+            if (!bytes || bytes === 0) return '0 B';
             const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const sizes = ['B', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
@@ -883,7 +1067,7 @@
         // 페이지 로드 시 초기화
         initializeFirebase();
 
-        console.log('📁 Firebase 파일 다운로드 매니저 준비 완료!');
+        console.log('📁 Firebase v9+ 다운로드 매니저 준비 완료!');
     </script>
 </body>
 </html>
