@@ -32,6 +32,7 @@
             color: white;
             padding: 40px;
             text-align: center;
+            position: relative;
         }
 
         .header h1 {
@@ -54,6 +55,75 @@
             border-radius: 20px;
             font-size: 0.9em;
             font-weight: 600;
+        }
+
+        .download-toolbar {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e1e8ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .selection-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .select-all-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: #667eea;
+        }
+
+        .selection-text {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .download-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .download-selected-btn {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-selected-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
+        }
+
+        .download-selected-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .clear-selection-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         .main-content {
@@ -116,186 +186,6 @@
             font-weight: 600;
         }
 
-        .products-section {
-            margin-bottom: 40px;
-        }
-
-        .section-title {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-        }
-
-        .product-card {
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-            border-radius: 20px;
-            padding: 30px;
-            border: 2px solid #e1e8ed;
-            transition: all 0.4s ease;
-        }
-
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
-            border-color: #667eea;
-        }
-
-        .product-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .product-title {
-            font-size: 1.4em;
-            font-weight: 700;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .product-icon {
-            font-size: 1.8em;
-        }
-
-        .download-all-btn {
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-size: 0.9em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .download-all-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
-        }
-
-        .download-all-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .concepts-list {
-            space-y: 15px;
-        }
-
-        .concept-item {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #e1e8ed;
-            transition: all 0.2s ease;
-        }
-
-        .concept-item:hover {
-            background: #f8f9ff;
-            border-color: #667eea;
-        }
-
-        .concept-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .concept-info {
-            flex-grow: 1;
-        }
-
-        .concept-name {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .concept-meta {
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .concept-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .action-btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.85em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .action-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .download-btn {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-        }
-
-        .download-btn:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-        }
-
-        .preview-btn {
-            background: linear-gradient(135deg, #9b59b6, #8e44ad);
-            color: white;
-        }
-
-        .preview-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .search-filter {
             background: white;
             padding: 25px;
@@ -343,81 +233,154 @@
             border-color: #667eea;
         }
 
-        .preview-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .preview-modal.active {
-            display: flex;
-        }
-
-        .preview-content {
+        /* 구글 드라이브 스타일 파일 탐색기 */
+        .file-explorer {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 90%;
-            max-height: 90%;
+            border-radius: 15px;
+            border: 2px solid #e1e8ed;
+            overflow: hidden;
+        }
+
+        .explorer-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e1e8ed;
+            display: grid;
+            grid-template-columns: 40px 1fr 120px 100px 150px;
+            gap: 15px;
+            align-items: center;
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .explorer-body {
+            max-height: 600px;
             overflow-y: auto;
         }
 
-        .preview-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .preview-close {
-            background: #ff4757;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        .preview-grid {
+        .folder-item, .file-item {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: 40px 1fr 120px 100px 150px;
             gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            align-items: center;
+            transition: background 0.2s ease;
+            cursor: pointer;
         }
 
-        .preview-item {
-            position: relative;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        .folder-item:hover, .file-item:hover {
+            background: #f8f9ff;
         }
 
-        .preview-item img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
+        .folder-item.selected, .file-item.selected {
+            background: #e3f2fd;
+            border-left: 4px solid #667eea;
         }
 
-        .preview-item-info {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            color: white;
-            padding: 10px;
+        .item-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+            cursor: pointer;
+        }
+
+        .item-icon {
+            font-size: 1.5em;
+            text-align: center;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .folder-toggle {
+            background: none;
+            border: none;
             font-size: 0.8em;
+            color: #666;
+            cursor: pointer;
+            padding: 2px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            transition: background 0.2s ease;
         }
 
-        /* 다운로드 진행상황 표시 */
+        .folder-toggle:hover {
+            background: #e0e0e0;
+        }
+
+        .item-type {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .item-count {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .item-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .item-date {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .folder-children {
+            display: none;
+        }
+
+        .folder-children.expanded {
+            display: block;
+        }
+
+        .folder-children .folder-item,
+        .folder-children .file-item {
+            padding-left: 60px;
+            background: #fafafa;
+        }
+
+        .folder-children .folder-children .folder-item,
+        .folder-children .folder-children .file-item {
+            padding-left: 100px;
+            background: #f5f5f5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .download-progress {
             position: fixed;
             top: 50%;
@@ -429,7 +392,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             z-index: 2000;
             text-align: center;
-            min-width: 300px;
+            min-width: 350px;
             display: none;
         }
 
@@ -454,26 +417,17 @@
         }
 
         @media (max-width: 768px) {
-            .header {
-                padding: 30px 20px;
+            .explorer-header, .folder-item, .file-item {
+                grid-template-columns: 40px 1fr 80px;
             }
-
-            .main-content {
-                padding: 30px 20px;
+            
+            .item-count, .item-date {
+                display: none;
             }
-
-            .product-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-section {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .concept-header {
+            
+            .download-toolbar {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
+                align-items: stretch;
             }
         }
     </style>
@@ -483,24 +437,30 @@
         <div class="header">
             <div class="admin-badge">👑 관리자</div>
             <h1>📁 제품 사진 관리 대시보드</h1>
-            <p>Firebase Storage에 업로드된 모든 사진을 관리하고 다운로드하세요</p>
+            <p>Google Drive 스타일로 파일을 탐색하고 선택해서 다운로드하세요</p>
+        </div>
+
+        <!-- 다운로드 툴바 -->
+        <div class="download-toolbar">
+            <div class="selection-info">
+                <input type="checkbox" id="selectAllCheckbox" class="select-all-checkbox" onchange="toggleSelectAll()">
+                <label for="selectAllCheckbox" class="selection-text">전체 선택</label>
+                <span class="selection-text" id="selectionCount">0개 선택됨</span>
+            </div>
+            <div class="download-actions">
+                <button class="download-selected-btn" id="downloadSelectedBtn" onclick="downloadSelected()" disabled>
+                    📥 선택된 항목 다운로드
+                </button>
+                <button class="clear-selection-btn" onclick="clearSelection()">
+                    🗑️ 선택 해제
+                </button>
+            </div>
         </div>
 
         <div class="main-content">
             <!-- 연결 상태 -->
             <div class="connection-status" id="connectionStatus">
                 🔄 Firebase 연결 중...
-            </div>
-
-            <!-- 검색 및 필터 -->
-            <div class="search-filter">
-                <input type="text" class="search-input" id="searchInput" placeholder="🔍 제출자명, 제품명으로 검색...">
-                <div class="filter-buttons">
-                    <button class="filter-btn active" onclick="filterByProduct('all')">전체</button>
-                    <button class="filter-btn" onclick="filterByProduct('멀티쿠커')">🍲 멀티쿠커</button>
-                    <button class="filter-btn" onclick="filterByProduct('오토슬라이서')">🔪 오토슬라이서</button>
-                    <button class="filter-btn" onclick="filterByProduct('드립커피머신')">☕ 드립커피머신</button>
-                </div>
             </div>
 
             <!-- 통계 -->
@@ -523,16 +483,33 @@
                 </div>
             </div>
 
-            <!-- 제품별 리스트 -->
-            <div class="products-section">
-                <h2 class="section-title">📦 제품별 업로드 현황</h2>
+            <!-- 검색 및 필터 -->
+            <div class="search-filter">
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 제출자명, 제품명으로 검색...">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterByProduct('all')">전체</button>
+                    <button class="filter-btn" onclick="filterByProduct('멀티쿠커')">🍲 멀티쿠커</button>
+                    <button class="filter-btn" onclick="filterByProduct('오토슬라이서')">🔪 오토슬라이서</button>
+                    <button class="filter-btn" onclick="filterByProduct('드립커피머신')">☕ 드립커피머신</button>
+                </div>
+            </div>
+
+            <!-- 파일 탐색기 -->
+            <div class="file-explorer">
+                <div class="explorer-header">
+                    <div></div>
+                    <div>이름</div>
+                    <div>종류</div>
+                    <div>파일 수</div>
+                    <div>수정일</div>
+                </div>
                 
                 <div class="loading" id="loadingIndicator">
                     <div class="loading-spinner"></div>
                     <p>Firebase Storage 데이터를 불러오는 중...</p>
                 </div>
 
-                <div class="product-grid" id="productGrid" style="display: none;">
+                <div class="explorer-body" id="explorerBody" style="display: none;">
                     <!-- 동적으로 생성 -->
                 </div>
             </div>
@@ -547,22 +524,6 @@
         </div>
         <p id="downloadStatus">0 / 0 파일 완료</p>
     </div>
-
-    <!-- 미리보기 모달 -->
-    <div class="preview-modal" id="previewModal">
-        <div class="preview-content">
-            <div class="preview-header">
-                <h3 id="previewTitle">사진 미리보기</h3>
-                <button class="preview-close" onclick="closePreview()">×</button>
-            </div>
-            <div class="preview-grid" id="previewGrid">
-                <!-- 동적으로 생성 -->
-            </div>
-        </div>
-    </div>
-
-    <!-- JSZip 라이브러리 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -582,8 +543,9 @@
 
         // 전역 변수
         let app, storage;
-        let allData = [];
-        let filteredData = [];
+        let allData = {};
+        let filteredData = {};
+        let selectedItems = new Set();
         let currentFilter = 'all';
 
         // Firebase 초기화
@@ -597,7 +559,7 @@
                 
             } catch (error) {
                 console.error('Firebase 초기화 실패:', error);
-                updateConnectionStatus('error', '❌ Firebase 연결 실패');
+                updateConnectionStatus('error', '❌ Firebase 연결 실패: ' + error.message);
             }
         }
 
@@ -627,7 +589,14 @@
                     console.log(`📦 ${productName} 폴더 스캔 중...`);
                     
                     const productList = await listAll(productRef);
-                    productData[productName] = { concepts: [], totalFiles: 0, totalSize: 0 };
+                    productData[productName] = { 
+                        concepts: [], 
+                        totalFiles: 0, 
+                        totalSize: 0,
+                        id: `product_${productName}`,
+                        type: 'folder',
+                        expanded: false
+                    };
 
                     // 컨셉별 폴더 스캔
                     for (const conceptRef of productList.prefixes) {
@@ -649,12 +618,14 @@
                                 const downloadURL = await getDownloadURL(fileRef);
                                 
                                 files.push({
+                                    id: `file_${fileRef.fullPath}`,
                                     name: fileRef.name,
                                     fullPath: fileRef.fullPath,
                                     downloadURL: downloadURL,
                                     size: metadata.size,
                                     timeCreated: metadata.timeCreated,
-                                    type: metadata.contentType
+                                    type: 'file',
+                                    contentType: metadata.contentType
                                 });
                                 
                                 conceptSize += metadata.size;
@@ -667,12 +638,15 @@
                         }
 
                         productData[productName].concepts.push({
+                            id: `concept_${productName}_${conceptName}`,
                             name: conceptName,
                             submitter: submitterName,
                             files: files,
                             fileCount: files.length,
                             totalSize: conceptSize,
-                            lastModified: files.length > 0 ? Math.max(...files.map(f => new Date(f.timeCreated).getTime())) : 0
+                            lastModified: files.length > 0 ? Math.max(...files.map(f => new Date(f.timeCreated).getTime())) : 0,
+                            type: 'folder',
+                            expanded: false
                         });
 
                         productData[productName].totalFiles += files.length;
@@ -681,6 +655,8 @@
 
                     // 컨셉을 최신순으로 정렬
                     productData[productName].concepts.sort((a, b) => b.lastModified - a.lastModified);
+                    productData[productName].lastModified = productData[productName].concepts.length > 0 ? 
+                        productData[productName].concepts[0].lastModified : 0;
                 }
 
                 // 전역 데이터 저장
@@ -696,15 +672,15 @@
                 });
 
                 // UI 업데이트
-                renderProductGrid();
+                renderFileExplorer();
                 
                 console.log('✅ 모든 데이터 로드 완료');
                 document.getElementById('loadingIndicator').style.display = 'none';
-                document.getElementById('productGrid').style.display = 'grid';
+                document.getElementById('explorerBody').style.display = 'block';
                 
             } catch (error) {
                 console.error('❌ 데이터 로드 실패:', error);
-                updateConnectionStatus('error', '❌ 데이터 로드 실패');
+                updateConnectionStatus('error', '❌ 데이터 로드 실패: ' + error.message);
             }
         }
 
@@ -716,66 +692,319 @@
             document.getElementById('totalSize').textContent = formatFileSize(stats.totalSize);
         }
 
-        // 제품 그리드 렌더링
-        function renderProductGrid() {
-            const grid = document.getElementById('productGrid');
-            grid.innerHTML = '';
-
-            const productIcons = {
-                '멀티쿠커': '🍲',
-                '오토슬라이서': '🔪',
-                '드립커피머신': '☕'
-            };
+        // 파일 탐색기 렌더링
+        function renderFileExplorer() {
+            const explorerBody = document.getElementById('explorerBody');
+            explorerBody.innerHTML = '';
 
             Object.entries(filteredData).forEach(([productName, productInfo]) => {
-                const productCard = document.createElement('div');
-                productCard.className = 'product-card';
-                
-                const conceptsHtml = productInfo.concepts.map(concept => `
-                    <div class="concept-item">
-                        <div class="concept-header">
-                            <div class="concept-info">
-                                <div class="concept-name">${concept.name}</div>
-                                <div class="concept-meta">
-                                    📸 ${concept.fileCount}개 파일 · 📦 ${formatFileSize(concept.totalSize)} · 
-                                    📅 ${new Date(concept.lastModified).toLocaleDateString()}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="concept-actions">
-                            <button class="action-btn download-btn" onclick="downloadConcept('${productName}', '${concept.name}')">
-                                💾 ZIP 다운로드 (${concept.fileCount}개)
-                            </button>
-                            <button class="action-btn preview-btn" onclick="previewConcept('${productName}', '${concept.name}')">
-                                👁️ 미리보기
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
+                // 제품 폴더
+                const productElement = createFolderElement({
+                    id: productInfo.id,
+                    name: productName,
+                    icon: getProductIcon(productName),
+                    type: '제품 폴더',
+                    count: `${productInfo.concepts.length}개 컨셉`,
+                    size: formatFileSize(productInfo.totalSize),
+                    date: new Date(productInfo.lastModified).toLocaleDateString(),
+                    expanded: productInfo.expanded,
+                    level: 0
+                });
 
-                productCard.innerHTML = `
-                    <div class="product-header">
-                        <div class="product-title">
-                            <span class="product-icon">${productIcons[productName] || '📦'}</span>
-                            ${productName}
-                        </div>
-                        <button class="download-all-btn" onclick="downloadProduct('${productName}')">
-                            📥 전체 ZIP 다운로드
-                        </button>
-                    </div>
-                    <div class="concept-meta" style="margin-bottom: 20px; color: #666;">
-                        💼 ${productInfo.concepts.length}개 컨셉 · 📸 ${productInfo.totalFiles}개 파일 · 📦 ${formatFileSize(productInfo.totalSize)}
-                    </div>
-                    <div class="concepts-list">
-                        ${conceptsHtml}
-                    </div>
-                `;
+                explorerBody.appendChild(productElement);
 
-                grid.appendChild(productCard);
+                // 컨셉 폴더들 (처음에는 숨김)
+                if (productInfo.expanded) {
+                    const conceptsContainer = document.createElement('div');
+                    conceptsContainer.className = 'folder-children expanded';
+                    conceptsContainer.id = `children_${productInfo.id}`;
+
+                    productInfo.concepts.forEach(concept => {
+                        const conceptElement = createFolderElement({
+                            id: concept.id,
+                            name: concept.name,
+                            icon: '🎨',
+                            type: '컨셉 폴더',
+                            count: `${concept.fileCount}개 파일`,
+                            size: formatFileSize(concept.totalSize),
+                            date: new Date(concept.lastModified).toLocaleDateString(),
+                            expanded: concept.expanded,
+                            level: 1
+                        });
+
+                        conceptsContainer.appendChild(conceptElement);
+
+                        // 파일들 (처음에는 숨김)
+                        if (concept.expanded) {
+                            const filesContainer = document.createElement('div');
+                            filesContainer.className = 'folder-children expanded';
+                            filesContainer.id = `children_${concept.id}`;
+
+                            concept.files.forEach(file => {
+                                const fileElement = createFileElement({
+                                    id: file.id,
+                                    name: file.name,
+                                    icon: getFileIcon(file.contentType),
+                                    type: getFileType(file.contentType),
+                                    size: formatFileSize(file.size),
+                                    date: new Date(file.timeCreated).toLocaleDateString(),
+                                    level: 2
+                                });
+                                filesContainer.appendChild(fileElement);
+                            });
+
+                            conceptsContainer.appendChild(filesContainer);
+                        }
+                    });
+
+                    explorerBody.appendChild(conceptsContainer);
+                }
             });
+
+            updateSelectionUI();
         }
 
-        // 다운로드 진행상황 표시
+        // 폴더 요소 생성
+        function createFolderElement(folder) {
+            const folderDiv = document.createElement('div');
+            folderDiv.className = 'folder-item';
+            folderDiv.id = folder.id;
+            if (selectedItems.has(folder.id)) {
+                folderDiv.classList.add('selected');
+            }
+
+            folderDiv.innerHTML = `
+                <input type="checkbox" class="item-checkbox" ${selectedItems.has(folder.id) ? 'checked' : ''} 
+                       onchange="toggleSelection('${folder.id}', this.checked)">
+                <div class="item-icon">${folder.icon}</div>
+                <div class="item-name">
+                    <button class="folder-toggle" onclick="toggleFolder('${folder.id}')">
+                        ${folder.expanded ? '▼' : '▶'}
+                    </button>
+                    ${folder.name}
+                </div>
+                <div class="item-type">${folder.type}</div>
+                <div class="item-count">${folder.count}</div>
+                <div class="item-date">${folder.date}</div>
+            `;
+
+            return folderDiv;
+        }
+
+        // 파일 요소 생성
+        function createFileElement(file) {
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'file-item';
+            fileDiv.id = file.id;
+            if (selectedItems.has(file.id)) {
+                fileDiv.classList.add('selected');
+            }
+
+            fileDiv.innerHTML = `
+                <input type="checkbox" class="item-checkbox" ${selectedItems.has(file.id) ? 'checked' : ''} 
+                       onchange="toggleSelection('${file.id}', this.checked)">
+                <div class="item-icon">${file.icon}</div>
+                <div class="item-name">${file.name}</div>
+                <div class="item-type">${file.type}</div>
+                <div class="item-count">${file.size}</div>
+                <div class="item-date">${file.date}</div>
+            `;
+
+            return fileDiv;
+        }
+
+        // 폴더 토글
+        window.toggleFolder = function(folderId) {
+            console.log('폴더 토글:', folderId);
+            
+            // 데이터에서 해당 폴더 찾기 및 상태 변경
+            Object.values(allData).forEach(product => {
+                if (product.id === folderId) {
+                    product.expanded = !product.expanded;
+                } else {
+                    product.concepts.forEach(concept => {
+                        if (concept.id === folderId) {
+                            concept.expanded = !concept.expanded;
+                        }
+                    });
+                }
+            });
+
+            // UI 다시 렌더링
+            renderFileExplorer();
+        };
+
+        // 선택 토글
+        window.toggleSelection = function(itemId, checked) {
+            if (checked) {
+                selectedItems.add(itemId);
+            } else {
+                selectedItems.delete(itemId);
+            }
+            updateSelectionUI();
+        };
+
+        // 전체 선택 토글
+        window.toggleSelectAll = function() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const allCheckboxes = document.querySelectorAll('.item-checkbox');
+            
+            selectedItems.clear();
+            
+            if (selectAllCheckbox.checked) {
+                // 모든 항목 선택
+                Object.values(filteredData).forEach(product => {
+                    selectedItems.add(product.id);
+                    product.concepts.forEach(concept => {
+                        selectedItems.add(concept.id);
+                        concept.files.forEach(file => {
+                            selectedItems.add(file.id);
+                        });
+                    });
+                });
+            }
+            
+            // 체크박스 상태 업데이트
+            allCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            
+            renderFileExplorer();
+        };
+
+        // 선택 해제
+        window.clearSelection = function() {
+            selectedItems.clear();
+            document.getElementById('selectAllCheckbox').checked = false;
+            renderFileExplorer();
+        };
+
+        // 선택 UI 업데이트
+        function updateSelectionUI() {
+            const selectionCount = document.getElementById('selectionCount');
+            const downloadBtn = document.getElementById('downloadSelectedBtn');
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            
+            selectionCount.textContent = `${selectedItems.size}개 선택됨`;
+            downloadBtn.disabled = selectedItems.size === 0;
+            
+            // 전체 선택 체크박스 상태 업데이트
+            const totalItems = getTotalItemCount();
+            if (selectedItems.size === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (selectedItems.size === totalItems) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+
+        // 총 아이템 수 계산
+        function getTotalItemCount() {
+            let count = 0;
+            Object.values(filteredData).forEach(product => {
+                count++; // 제품 폴더
+                product.concepts.forEach(concept => {
+                    count++; // 컨셉 폴더
+                    count += concept.files.length; // 파일들
+                });
+            });
+            return count;
+        }
+
+        // 선택된 항목 다운로드
+        window.downloadSelected = async function() {
+            if (selectedItems.size === 0) {
+                alert('다운로드할 항목을 선택해주세요.');
+                return;
+            }
+
+            const selectedFiles = [];
+            
+            // 선택된 항목에서 실제 파일들 추출
+            selectedItems.forEach(itemId => {
+                if (itemId.startsWith('file_')) {
+                    // 직접 선택된 파일
+                    Object.values(allData).forEach(product => {
+                        product.concepts.forEach(concept => {
+                            const file = concept.files.find(f => f.id === itemId);
+                            if (file) {
+                                selectedFiles.push({
+                                    ...file,
+                                    productName: Object.keys(allData).find(key => allData[key].concepts.some(c => c.files.includes(file))),
+                                    conceptName: concept.name
+                                });
+                            }
+                        });
+                    });
+                } else if (itemId.startsWith('concept_')) {
+                    // 컨셉 폴더 - 해당 컨셉의 모든 파일
+                    Object.values(allData).forEach(product => {
+                        const concept = product.concepts.find(c => c.id === itemId);
+                        if (concept) {
+                            concept.files.forEach(file => {
+                                selectedFiles.push({
+                                    ...file,
+                                    productName: Object.keys(allData).find(key => allData[key].concepts.includes(concept)),
+                                    conceptName: concept.name
+                                });
+                            });
+                        }
+                    });
+                } else if (itemId.startsWith('product_')) {
+                    // 제품 폴더 - 해당 제품의 모든 파일
+                    const productName = itemId.replace('product_', '');
+                    const product = allData[productName];
+                    if (product) {
+                        product.concepts.forEach(concept => {
+                            concept.files.forEach(file => {
+                                selectedFiles.push({
+                                    ...file,
+                                    productName: productName,
+                                    conceptName: concept.name
+                                });
+                            });
+                        });
+                    }
+                }
+            });
+
+            if (selectedFiles.length === 0) {
+                alert('다운로드할 파일이 없습니다.');
+                return;
+            }
+
+            // 간단한 개별 파일 다운로드 (ZIP 없이)
+            showDownloadProgress(`${selectedFiles.length}개 파일 다운로드`);
+            
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                try {
+                    const link = document.createElement('a');
+                    link.href = file.downloadURL;
+                    link.download = `${file.conceptName}_${file.name}`;
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    updateDownloadProgress(i + 1, selectedFiles.length);
+                    
+                    // 다운로드 간격 (브라우저 제한 방지)
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                } catch (error) {
+                    console.error(`파일 다운로드 실패: ${file.name}`, error);
+                }
+            }
+            
+            hideDownloadProgress();
+            alert(`✅ ${selectedFiles.length}개 파일 다운로드 완료!`);
+        };
+
+        // 다운로드 진행상황 함수들
         function showDownloadProgress(title) {
             const progressDiv = document.getElementById('downloadProgress');
             const titleDiv = document.getElementById('downloadTitle');
@@ -801,138 +1030,6 @@
             document.getElementById('downloadProgress').classList.remove('active');
         }
 
-        // 파일을 Blob으로 다운로드
-        async function downloadFileAsBlob(url, filename) {
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const blob = await response.blob();
-                return { blob, filename };
-            } catch (error) {
-                console.error(`파일 다운로드 실패: ${filename}`, error);
-                return null;
-            }
-        }
-
-        // 컨셉 다운로드 (ZIP)
-        window.downloadConcept = async function(productName, conceptName) {
-            const concept = allData[productName].concepts.find(c => c.name === conceptName);
-            if (!concept || concept.files.length === 0) {
-                alert('다운로드할 파일이 없습니다.');
-                return;
-            }
-
-            // 다운로드 버튼 비활성화
-            const button = event.target;
-            const originalText = button.textContent;
-            button.disabled = true;
-            button.textContent = '다운로드 중...';
-
-            showDownloadProgress(`${conceptName} ZIP 파일 생성 중...`);
-
-            try {
-                const zip = new JSZip();
-                let downloadedCount = 0;
-
-                // 각 파일을 ZIP에 추가
-                for (const file of concept.files) {
-                    const fileData = await downloadFileAsBlob(file.downloadURL, file.name);
-                    if (fileData) {
-                        zip.file(fileData.filename, fileData.blob);
-                        downloadedCount++;
-                        updateDownloadProgress(downloadedCount, concept.files.length);
-                    }
-                }
-
-                if (downloadedCount === 0) {
-                    throw new Error('다운로드된 파일이 없습니다.');
-                }
-
-                // ZIP 파일 생성 및 다운로드
-                const zipBlob = await zip.generateAsync({ type: 'blob' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(zipBlob);
-                link.download = `${conceptName}.zip`;
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
-
-                alert(`✅ ${conceptName} ZIP 다운로드 완료! (${downloadedCount}개 파일)`);
-
-            } catch (error) {
-                console.error('ZIP 다운로드 실패:', error);
-                alert('❌ 다운로드 중 오류가 발생했습니다.');
-            } finally {
-                hideDownloadProgress();
-                button.disabled = false;
-                button.textContent = originalText;
-            }
-        };
-
-        // 제품 전체 다운로드 (ZIP)
-        window.downloadProduct = async function(productName) {
-            const productInfo = allData[productName];
-            if (!productInfo || productInfo.totalFiles === 0) {
-                alert('다운로드할 파일이 없습니다.');
-                return;
-            }
-
-            // 다운로드 버튼 비활성화
-            const button = event.target;
-            const originalText = button.textContent;
-            button.disabled = true;
-            button.textContent = '다운로드 중...';
-
-            showDownloadProgress(`${productName} 전체 ZIP 파일 생성 중...`);
-
-            try {
-                const zip = new JSZip();
-                let downloadedCount = 0;
-                const totalFiles = productInfo.totalFiles;
-
-                // 각 컨셉별로 폴더 생성하고 파일 추가
-                for (const concept of productInfo.concepts) {
-                    const conceptFolder = zip.folder(concept.name);
-                    
-                    for (const file of concept.files) {
-                        const fileData = await downloadFileAsBlob(file.downloadURL, file.name);
-                        if (fileData) {
-                            conceptFolder.file(fileData.filename, fileData.blob);
-                            downloadedCount++;
-                            updateDownloadProgress(downloadedCount, totalFiles);
-                        }
-                    }
-                }
-
-                if (downloadedCount === 0) {
-                    throw new Error('다운로드된 파일이 없습니다.');
-                }
-
-                // ZIP 파일 생성 및 다운로드
-                const zipBlob = await zip.generateAsync({ type: 'blob' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(zipBlob);
-                link.download = `${productName}_전체.zip`;
-                link.style.display = 'none';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
-
-                alert(`✅ ${productName} 전체 ZIP 다운로드 완료! (${downloadedCount}개 파일)`);
-
-            } catch (error) {
-                console.error('ZIP 다운로드 실패:', error);
-                alert('❌ 다운로드 중 오류가 발생했습니다.');
-            } finally {
-                hideDownloadProgress();
-                button.disabled = false;
-                button.textContent = originalText;
-            }
-        };
-
         // 제품별 필터링
         window.filterByProduct = function(product) {
             currentFilter = product;
@@ -953,7 +1050,7 @@
                 }
             }
 
-            renderProductGrid();
+            renderFileExplorer();
         };
 
         // 검색 기능
@@ -981,43 +1078,33 @@
                 }
             });
 
-            renderProductGrid();
+            renderFileExplorer();
         });
 
-        // 미리보기
-        window.previewConcept = function(productName, conceptName) {
-            const concept = allData[productName].concepts.find(c => c.name === conceptName);
-            if (!concept) return;
+        // 유틸리티 함수들
+        function getProductIcon(productName) {
+            const icons = {
+                '멀티쿠커': '🍲',
+                '오토슬라이서': '🔪',
+                '드립커피머신': '☕'
+            };
+            return icons[productName] || '📦';
+        }
 
-            const modal = document.getElementById('previewModal');
-            const title = document.getElementById('previewTitle');
-            const grid = document.getElementById('previewGrid');
+        function getFileIcon(contentType) {
+            if (contentType?.startsWith('image/')) return '🖼️';
+            if (contentType?.startsWith('video/')) return '🎬';
+            if (contentType?.startsWith('audio/')) return '🎵';
+            return '📄';
+        }
 
-            title.textContent = `${conceptName} (${concept.files.length}개 파일)`;
-            
-            const imageFiles = concept.files.filter(file => 
-                file.type && file.type.startsWith('image/')
-            );
+        function getFileType(contentType) {
+            if (contentType?.startsWith('image/')) return '이미지';
+            if (contentType?.startsWith('video/')) return '비디오';
+            if (contentType?.startsWith('audio/')) return '오디오';
+            return '파일';
+        }
 
-            grid.innerHTML = imageFiles.map(file => `
-                <div class="preview-item">
-                    <img src="${file.downloadURL}" alt="${file.name}" loading="lazy">
-                    <div class="preview-item-info">
-                        <div>${file.name}</div>
-                        <div>${formatFileSize(file.size)}</div>
-                    </div>
-                </div>
-            `).join('');
-
-            modal.classList.add('active');
-        };
-
-        // 미리보기 닫기
-        window.closePreview = function() {
-            document.getElementById('previewModal').classList.remove('active');
-        };
-
-        // 유틸리티 함수
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
             const k = 1024;
@@ -1029,7 +1116,7 @@
         // 페이지 로드 시 초기화
         initializeFirebase();
 
-        console.log('📁 관리자 대시보드 준비 완료!');
+        console.log('📁 Google Drive 스타일 관리자 대시보드 준비 완료!');
     </script>
 </body>
 </html>
