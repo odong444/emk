@@ -178,11 +178,18 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .download-all-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(46, 204, 113, 0.3);
+        }
+
+        .download-all-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .concepts-list {
@@ -239,6 +246,12 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .download-btn {
@@ -246,7 +259,7 @@
             color: white;
         }
 
-        .download-btn:hover {
+        .download-btn:hover:not(:disabled) {
             transform: translateY(-1px);
             box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
         }
@@ -404,6 +417,42 @@
             font-size: 0.8em;
         }
 
+        /* 다운로드 진행상황 표시 */
+        .download-progress {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 2000;
+            text-align: center;
+            min-width: 300px;
+            display: none;
+        }
+
+        .download-progress.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
         @media (max-width: 768px) {
             .header {
                 padding: 30px 20px;
@@ -490,6 +539,15 @@
         </div>
     </div>
 
+    <!-- 다운로드 진행상황 -->
+    <div class="download-progress" id="downloadProgress">
+        <h3 id="downloadTitle">파일 다운로드 중...</h3>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <p id="downloadStatus">0 / 0 파일 완료</p>
+    </div>
+
     <!-- 미리보기 모달 -->
     <div class="preview-modal" id="previewModal">
         <div class="preview-content">
@@ -502,6 +560,9 @@
             </div>
         </div>
     </div>
+
+    <!-- JSZip 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <!-- Firebase SDK -->
     <script type="module">
@@ -683,7 +744,7 @@
                         </div>
                         <div class="concept-actions">
                             <button class="action-btn download-btn" onclick="downloadConcept('${productName}', '${concept.name}')">
-                                💾 다운로드 (${concept.fileCount}개)
+                                💾 ZIP 다운로드 (${concept.fileCount}개)
                             </button>
                             <button class="action-btn preview-btn" onclick="previewConcept('${productName}', '${concept.name}')">
                                 👁️ 미리보기
@@ -699,7 +760,7 @@
                             ${productName}
                         </div>
                         <button class="download-all-btn" onclick="downloadProduct('${productName}')">
-                            📥 전체 다운로드
+                            📥 전체 ZIP 다운로드
                         </button>
                     </div>
                     <div class="concept-meta" style="margin-bottom: 20px; color: #666;">
@@ -713,6 +774,164 @@
                 grid.appendChild(productCard);
             });
         }
+
+        // 다운로드 진행상황 표시
+        function showDownloadProgress(title) {
+            const progressDiv = document.getElementById('downloadProgress');
+            const titleDiv = document.getElementById('downloadTitle');
+            const fillDiv = document.getElementById('progressFill');
+            const statusDiv = document.getElementById('downloadStatus');
+            
+            titleDiv.textContent = title;
+            fillDiv.style.width = '0%';
+            statusDiv.textContent = '다운로드 준비 중...';
+            progressDiv.classList.add('active');
+        }
+
+        function updateDownloadProgress(current, total) {
+            const fillDiv = document.getElementById('progressFill');
+            const statusDiv = document.getElementById('downloadStatus');
+            
+            const percentage = (current / total) * 100;
+            fillDiv.style.width = percentage + '%';
+            statusDiv.textContent = `${current} / ${total} 파일 완료 (${percentage.toFixed(1)}%)`;
+        }
+
+        function hideDownloadProgress() {
+            document.getElementById('downloadProgress').classList.remove('active');
+        }
+
+        // 파일을 Blob으로 다운로드
+        async function downloadFileAsBlob(url, filename) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const blob = await response.blob();
+                return { blob, filename };
+            } catch (error) {
+                console.error(`파일 다운로드 실패: ${filename}`, error);
+                return null;
+            }
+        }
+
+        // 컨셉 다운로드 (ZIP)
+        window.downloadConcept = async function(productName, conceptName) {
+            const concept = allData[productName].concepts.find(c => c.name === conceptName);
+            if (!concept || concept.files.length === 0) {
+                alert('다운로드할 파일이 없습니다.');
+                return;
+            }
+
+            // 다운로드 버튼 비활성화
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '다운로드 중...';
+
+            showDownloadProgress(`${conceptName} ZIP 파일 생성 중...`);
+
+            try {
+                const zip = new JSZip();
+                let downloadedCount = 0;
+
+                // 각 파일을 ZIP에 추가
+                for (const file of concept.files) {
+                    const fileData = await downloadFileAsBlob(file.downloadURL, file.name);
+                    if (fileData) {
+                        zip.file(fileData.filename, fileData.blob);
+                        downloadedCount++;
+                        updateDownloadProgress(downloadedCount, concept.files.length);
+                    }
+                }
+
+                if (downloadedCount === 0) {
+                    throw new Error('다운로드된 파일이 없습니다.');
+                }
+
+                // ZIP 파일 생성 및 다운로드
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(zipBlob);
+                link.download = `${conceptName}.zip`;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+                alert(`✅ ${conceptName} ZIP 다운로드 완료! (${downloadedCount}개 파일)`);
+
+            } catch (error) {
+                console.error('ZIP 다운로드 실패:', error);
+                alert('❌ 다운로드 중 오류가 발생했습니다.');
+            } finally {
+                hideDownloadProgress();
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        };
+
+        // 제품 전체 다운로드 (ZIP)
+        window.downloadProduct = async function(productName) {
+            const productInfo = allData[productName];
+            if (!productInfo || productInfo.totalFiles === 0) {
+                alert('다운로드할 파일이 없습니다.');
+                return;
+            }
+
+            // 다운로드 버튼 비활성화
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '다운로드 중...';
+
+            showDownloadProgress(`${productName} 전체 ZIP 파일 생성 중...`);
+
+            try {
+                const zip = new JSZip();
+                let downloadedCount = 0;
+                const totalFiles = productInfo.totalFiles;
+
+                // 각 컨셉별로 폴더 생성하고 파일 추가
+                for (const concept of productInfo.concepts) {
+                    const conceptFolder = zip.folder(concept.name);
+                    
+                    for (const file of concept.files) {
+                        const fileData = await downloadFileAsBlob(file.downloadURL, file.name);
+                        if (fileData) {
+                            conceptFolder.file(fileData.filename, fileData.blob);
+                            downloadedCount++;
+                            updateDownloadProgress(downloadedCount, totalFiles);
+                        }
+                    }
+                }
+
+                if (downloadedCount === 0) {
+                    throw new Error('다운로드된 파일이 없습니다.');
+                }
+
+                // ZIP 파일 생성 및 다운로드
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(zipBlob);
+                link.download = `${productName}_전체.zip`;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+                alert(`✅ ${productName} 전체 ZIP 다운로드 완료! (${downloadedCount}개 파일)`);
+
+            } catch (error) {
+                console.error('ZIP 다운로드 실패:', error);
+                alert('❌ 다운로드 중 오류가 발생했습니다.');
+            } finally {
+                hideDownloadProgress();
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        };
 
         // 제품별 필터링
         window.filterByProduct = function(product) {
@@ -764,68 +983,6 @@
 
             renderProductGrid();
         });
-
-        // 컨셉 다운로드
-        window.downloadConcept = async function(productName, conceptName) {
-            const concept = allData[productName].concepts.find(c => c.name === conceptName);
-            if (!concept) return;
-
-            console.log(`📥 ${conceptName} 다운로드 시작...`);
-            
-            // JSZip 라이브러리가 필요하지만, 간단하게 개별 파일 다운로드로 구현
-            for (const file of concept.files) {
-                try {
-                    const link = document.createElement('a');
-                    link.href = file.downloadURL;
-                    link.download = file.name;
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    
-                    // 다운로드 간격 (브라우저 제한 방지)
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
-                } catch (error) {
-                    console.error(`파일 다운로드 실패: ${file.name}`, error);
-                }
-            }
-            
-            alert(`✅ ${conceptName} 다운로드 완료! (${concept.files.length}개 파일)`);
-        };
-
-        // 제품 전체 다운로드
-        window.downloadProduct = async function(productName) {
-            const productInfo = allData[productName];
-            if (!productInfo) return;
-
-            console.log(`📥 ${productName} 전체 다운로드 시작...`);
-            
-            let downloadCount = 0;
-            for (const concept of productInfo.concepts) {
-                for (const file of concept.files) {
-                    try {
-                        const link = document.createElement('a');
-                        link.href = file.downloadURL;
-                        link.download = `${concept.name}_${file.name}`;
-                        link.style.display = 'none';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        
-                        downloadCount++;
-                        
-                        // 다운로드 간격
-                        await new Promise(resolve => setTimeout(resolve, 300));
-                        
-                    } catch (error) {
-                        console.error(`파일 다운로드 실패: ${file.name}`, error);
-                    }
-                }
-            }
-            
-            alert(`✅ ${productName} 전체 다운로드 완료! (${downloadCount}개 파일)`);
-        };
 
         // 미리보기
         window.previewConcept = function(productName, conceptName) {
