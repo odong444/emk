@@ -164,29 +164,148 @@
             display: none;
         }
 
-        .file-upload-zone {
-            border: 3px dashed #ff6b35;
+        .concept-form {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
             border-radius: 20px;
-            padding: 60px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 3px dashed #e1e8ed;
+            transition: all 0.4s ease;
+        }
+
+        .concept-form:hover {
+            border-color: #ff6b35;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .concept-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .concept-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .concept-number {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            font-weight: 800;
+        }
+
+        .remove-concept {
+            background: linear-gradient(135deg, #ff4757, #ff3838);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .remove-concept:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.3);
+        }
+
+        .concept-upload-zone {
+            border: 2px dashed #ff6b35;
+            border-radius: 15px;
+            padding: 40px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
             background: linear-gradient(135deg, #ffffff 0%, #fff8f5 100%);
-            margin: 30px 0;
-            position: relative;
+            margin: 20px 0;
         }
 
-        .file-upload-zone:hover {
+        .concept-upload-zone:hover {
             border-color: #e55a2b;
             background: linear-gradient(135deg, #fff8f5 0%, #fff0e6 100%);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.15);
+            transform: translateY(-2px);
         }
 
-        .file-upload-zone.dragover {
+        .concept-upload-zone.dragover {
             border-color: #e55a2b;
             background: linear-gradient(135deg, #fff0e6, #ffe0cc);
             transform: scale(1.02);
+        }
+
+        .add-concept-btn {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            margin: 30px auto;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .add-concept-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(255, 107, 53, 0.3);
+        }
+
+        .concept-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .concept-preview-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        .concept-preview-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .concept-preview img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+        }
+
+        .concept-file-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 71, 87, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
         }
 
         .upload-icon {
@@ -503,17 +622,11 @@
         </div>
 
         <div class="main-content">
-            <!-- Firebase 연결 상태 -->
+            <!-- 연결 상태 -->
             <div class="connection-status connecting" id="connectionStatus">
                 <span class="status-icon" id="statusIcon">🔄</span>
-                <h3 id="statusTitle">Firebase 연결 중...</h3>
+                <h3 id="statusTitle">시스템 준비 중...</h3>
                 <p id="statusMessage">잠시만 기다려주세요</p>
-            </div>
-
-            <!-- Firebase 정보 -->
-            <div class="firebase-info">
-                <h3>🔥 Firebase Storage 장점</h3>
-                <p>✅ 로그인 불필요 ✅ 초고속 업로드 ✅ 실시간 진행률 ✅ 자동 백업 ✅ 무제한 동시 업로드</p>
             </div>
 
             <!-- 업로드 폼 -->
@@ -546,29 +659,19 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="conceptNumber">컨셉 번호</label>
-                    <select id="conceptNumber">
-                        <option value="1">컨셉 1</option>
-                        <option value="2">컨셉 2</option>
-                        <option value="3">컨셉 3</option>
-                        <option value="4">컨셉 4</option>
-                        <option value="5">컨셉 5</option>
-                    </select>
+                <!-- 컨셉별 파일 업로드 섹션 -->
+                <div id="conceptsContainer">
+                    <!-- 컨셉들이 여기에 동적으로 추가됩니다 -->
                 </div>
+
+                <button type="button" class="add-concept-btn" onclick="addConcept()">
+                    ➕ 컨셉 추가하기
+                </button>
             </div>
 
-            <!-- 파일 업로드 존 -->
-            <div class="file-upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" style="display: none;">
-                <div class="upload-icon">🔥</div>
-                <h3 style="margin-bottom: 15px; color: #333;">파일을 선택하거나 드래그하세요</h3>
-                <p style="color: #666; font-size: 1.1em;">
-                    이미지 파일 (JPG, PNG, WebP) 지원<br>
-                    <strong>Firebase로 초고속 업로드 & 실시간 진행률!</strong>
-                </p>
-            </div>
+            <!-- 파일 업로드 존 - 제거됨 (각 컨셉별로 개별 업로드 존 생성) -->
 
-            <input type="file" id="fileInput" multiple accept="image/*" style="display: none;" onchange="handleFileSelect(this.files)">
+            <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
 
             <!-- 선택된 파일 목록 -->
             <div class="file-list" id="fileList" style="display: none;">
@@ -634,8 +737,9 @@
 
         // 전역 변수들
         let app, storage;
-        let selectedFiles = [];
+        let concepts = []; // 컨셉별 파일 관리
         let selectedProduct = '';
+        let conceptCount = 0;
         let uploadStats = {
             total: 0,
             completed: 0,
@@ -649,14 +753,14 @@
                 app = initializeApp(firebaseConfig);
                 storage = getStorage(app);
                 
-                updateConnectionStatus('success', '🔥', 'Firebase 연결 완료!', 'Firebase Storage가 준비되었습니다');
+                updateConnectionStatus('success', '✅', '시스템 준비 완료!', '이제 사진을 업로드할 수 있습니다');
                 showUploadForm();
                 
-                console.log('🔥 Firebase 초기화 완료');
+                console.log('🔥 시스템 초기화 완료');
                 
             } catch (error) {
-                console.error('Firebase 초기화 실패:', error);
-                updateConnectionStatus('error', '❌', 'Firebase 연결 실패', 'Firebase 설정을 확인해주세요');
+                console.error('시스템 초기화 실패:', error);
+                updateConnectionStatus('error', '❌', '시스템 연결 실패', '페이지를 새로고침해 주세요');
             }
         }
 
@@ -682,8 +786,10 @@
         // 업로드 폼 표시
         function showUploadForm() {
             document.getElementById('uploadForm').style.display = 'block';
-            document.getElementById('uploadZone').style.display = 'block';
             document.getElementById('uploadBtn').style.display = 'block';
+            
+            // 첫 번째 컨셉 자동 추가
+            addConcept();
         }
 
         // 제품 선택
@@ -700,31 +806,67 @@
             updateUploadButton();
         };
 
-        // 드래그 앤 드롭 이벤트
-        const uploadZone = document.getElementById('uploadZone');
-        
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.classList.add('dragover');
-        });
-        
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.classList.remove('dragover');
-        });
-        
-        uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadZone.classList.remove('dragover');
+        // 컨셉 추가
+        window.addConcept = function() {
+            conceptCount++;
+            concepts.push({ files: [] });
             
-            const files = Array.from(e.dataTransfer.files).filter(file => 
-                file.type.startsWith('image/')
-            );
+            const conceptsContainer = document.getElementById('conceptsContainer');
             
-            handleFileSelect(files);
-        });
+            const conceptDiv = document.createElement('div');
+            conceptDiv.className = 'concept-form';
+            conceptDiv.id = `concept-${conceptCount}`;
+            conceptDiv.innerHTML = `
+                <div class="concept-header">
+                    <div class="concept-title">
+                        <div class="concept-number">${conceptCount}</div>
+                        <span>컨셉 ${conceptCount}</span>
+                    </div>
+                    ${conceptCount > 1 ? `<button class="remove-concept" onclick="removeConcept(${conceptCount})">🗑️ 삭제</button>` : ''}
+                </div>
+                
+                <div class="concept-upload-zone" onclick="selectFiles(${conceptCount})">
+                    <div style="font-size: 2.5em; margin-bottom: 15px;">📸</div>
+                    <h4 style="margin-bottom: 10px; color: #333;">컨셉 ${conceptCount} 사진 업로드</h4>
+                    <p style="color: #666; font-size: 0.9em;">
+                        클릭하거나 드래그해서 사진을 선택하세요<br>
+                        <small>(3-10장 권장)</small>
+                    </p>
+                </div>
+                
+                <input type="file" id="fileInput-${conceptCount}" multiple accept="image/*" style="display: none;" onchange="handleConceptFiles(${conceptCount}, this.files)">
+                
+                <div class="concept-preview" id="preview-${conceptCount}"></div>
+            `;
+            
+            conceptsContainer.appendChild(conceptDiv);
+            
+            // 드래그앤드롭 이벤트 추가
+            addConceptDragEvents(conceptCount);
+            
+            updateUploadButton();
+            console.log(`➕ 컨셉 ${conceptCount} 추가됨`);
+        };
 
-        // 파일 선택 처리
-        window.handleFileSelect = function(files) {
+        // 컨셉 삭제
+        window.removeConcept = function(conceptNumber) {
+            const conceptDiv = document.getElementById(`concept-${conceptNumber}`);
+            conceptDiv.remove();
+            
+            // 개념 배열에서 제거
+            concepts[conceptNumber - 1] = { files: [] };
+            
+            updateUploadButton();
+            console.log(`🗑️ 컨셉 ${conceptNumber} 삭제됨`);
+        };
+
+        // 파일 선택
+        window.selectFiles = function(conceptNumber) {
+            document.getElementById(`fileInput-${conceptNumber}`).click();
+        };
+
+        // 컨셉별 파일 처리
+        window.handleConceptFiles = function(conceptNumber, files) {
             if (!files || files.length === 0) return;
             
             const imageFiles = Array.from(files).filter(file => 
@@ -736,19 +878,92 @@
                 return;
             }
             
-            selectedFiles = [...selectedFiles, ...imageFiles];
-            displayFileList();
-            updateUploadButton();
+            // 컨셉에 파일 추가
+            concepts[conceptNumber - 1].files = [...concepts[conceptNumber - 1].files, ...imageFiles];
             
-            console.log(`📁 ${imageFiles.length}개 파일 선택됨`);
+            displayConceptPreview(conceptNumber);
+            updateUploadButton();
+            updateFileList();
+            
+            console.log(`📁 컨셉 ${conceptNumber}에 ${imageFiles.length}개 파일 추가`);
         };
 
-        // 파일 목록 표시
+        // 컨셉 미리보기 표시
+        function displayConceptPreview(conceptNumber) {
+            const preview = document.getElementById(`preview-${conceptNumber}`);
+            const files = concepts[conceptNumber - 1].files;
+            
+            if (files.length === 0) {
+                preview.innerHTML = '';
+                return;
+            }
+            
+            preview.innerHTML = '';
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'concept-preview-item';
+                    previewItem.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview ${index + 1}">
+                        <button class="concept-file-remove" onclick="removeConceptFile(${conceptNumber}, ${index})" title="삭제">×</button>
+                    `;
+                    preview.appendChild(previewItem);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 컨셉 파일 제거
+        window.removeConceptFile = function(conceptNumber, fileIndex) {
+            concepts[conceptNumber - 1].files.splice(fileIndex, 1);
+            displayConceptPreview(conceptNumber);
+            updateUploadButton();
+            updateFileList();
+        };
+
+        // 컨셉별 드래그앤드롭 이벤트
+        function addConceptDragEvents(conceptNumber) {
+            const uploadZone = document.querySelector(`#concept-${conceptNumber} .concept-upload-zone`);
+            
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+            
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragover');
+            });
+            
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                
+                const files = Array.from(e.dataTransfer.files).filter(file => 
+                    file.type.startsWith('image/')
+                );
+                
+                handleConceptFiles(conceptNumber, files);
+            });
+        }
+
+        // 파일 목록 표시 (전체 요약용)
         function displayFileList() {
             const fileList = document.getElementById('fileList');
             const fileItems = document.getElementById('fileItems');
             
-            if (selectedFiles.length === 0) {
+            // 모든 컨셉의 파일 수집
+            let allFiles = [];
+            concepts.forEach((concept, conceptIndex) => {
+                concept.files.forEach(file => {
+                    allFiles.push({
+                        file: file,
+                        conceptNumber: conceptIndex + 1
+                    });
+                });
+            });
+            
+            if (allFiles.length === 0) {
                 fileList.style.display = 'none';
                 return;
             }
@@ -758,22 +973,21 @@
             
             let totalSize = 0;
             
-            selectedFiles.forEach((file, index) => {
-                totalSize += file.size;
+            allFiles.forEach((fileData, index) => {
+                totalSize += fileData.file.size;
                 
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
                 fileItem.id = `file-item-${index}`;
                 
-                // 미리보기 이미지 생성
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     fileItem.innerHTML = `
                         <div class="file-info">
                             <img class="file-preview" src="${e.target.result}" alt="Preview">
                             <div class="file-details">
-                                <div class="file-name">${file.name}</div>
-                                <div class="file-size">${formatFileSize(file.size)}</div>
+                                <div class="file-name">컨셉${fileData.conceptNumber}: ${fileData.file.name}</div>
+                                <div class="file-size">${formatFileSize(fileData.file.size)}</div>
                             </div>
                         </div>
                         <div class="file-status">
@@ -781,25 +995,21 @@
                             <div class="file-progress">
                                 <div class="progress-fill" style="width: 0%;"></div>
                             </div>
-                            <button class="file-remove" onclick="removeFile(${index})">×</button>
                         </div>
                     `;
                 };
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(fileData.file);
                 
                 fileItems.appendChild(fileItem);
             });
             
-            // 통계 업데이트
-            updateUploadStats(selectedFiles.length, 0, totalSize);
+            updateUploadStats(allFiles.length, 0, totalSize);
         }
 
-        // 파일 제거
-        window.removeFile = function(index) {
-            selectedFiles.splice(index, 1);
+        // 업로드할 파일 목록 업데이트
+        function updateFileList() {
             displayFileList();
-            updateUploadButton();
-        };
+        }
 
         // 업로드 통계 업데이트
         function updateUploadStats(total, completed, totalSize) {
@@ -821,16 +1031,27 @@
             const uploadBtn = document.getElementById('uploadBtn');
             const submitterName = document.getElementById('submitterName').value.trim();
             
+            // 모든 컨셉의 파일 수 계산
+            let totalFiles = 0;
+            let validConcepts = 0;
+            
+            concepts.forEach(concept => {
+                if (concept.files.length > 0) {
+                    totalFiles += concept.files.length;
+                    validConcepts++;
+                }
+            });
+            
             const isValid = submitterName && 
                            selectedProduct && 
-                           selectedFiles.length > 0;
+                           totalFiles > 0;
             
             uploadBtn.disabled = !isValid;
             
             if (isValid) {
-                uploadBtn.textContent = `🔥 ${selectedFiles.length}개 파일을 Firebase에 업로드!`;
+                uploadBtn.textContent = `🚀 ${totalFiles}개 파일 (${validConcepts}개 컨셉) 업로드!`;
             } else {
-                uploadBtn.textContent = '🔥 Firebase로 초고속 업로드 시작!';
+                uploadBtn.textContent = '🚀 빠른 업로드 시작!';
             }
         }
 
@@ -839,26 +1060,42 @@
             if (!validateForm()) return;
             
             const submitterName = document.getElementById('submitterName').value.trim();
-            const conceptNumber = document.getElementById('conceptNumber').value;
             
             // UI 업데이트
             document.getElementById('uploadBtn').disabled = true;
-            document.getElementById('uploadBtn').textContent = '🔥 Firebase 업로드 중...';
+            document.getElementById('uploadBtn').textContent = '🚀 업로드 중...';
+            
+            // 모든 파일 수집
+            let allUploadTasks = [];
+            let fileIndex = 0;
+            
+            concepts.forEach((concept, conceptIndex) => {
+                if (concept.files.length > 0) {
+                    concept.files.forEach((file, photoIndex) => {
+                        allUploadTasks.push({
+                            file: file,
+                            conceptNumber: conceptIndex + 1,
+                            photoIndex: photoIndex + 1,
+                            globalIndex: fileIndex++
+                        });
+                    });
+                }
+            });
             
             // 업로드 통계 초기화
             uploadStats = {
-                total: selectedFiles.length,
+                total: allUploadTasks.length,
                 completed: 0,
-                totalSize: selectedFiles.reduce((sum, file) => sum + file.size, 0),
+                totalSize: allUploadTasks.reduce((sum, task) => sum + task.file.size, 0),
                 startTime: Date.now()
             };
             
             try {
-                console.log(`🔥 Firebase 업로드 시작: ${selectedFiles.length}개 파일`);
+                console.log(`🚀 업로드 시작: ${allUploadTasks.length}개 파일`);
                 
                 // 병렬 업로드 시작
-                const uploadPromises = selectedFiles.map((file, index) => 
-                    uploadSingleFile(file, index, submitterName, conceptNumber)
+                const uploadPromises = allUploadTasks.map(task => 
+                    uploadSingleFile(task.file, task.globalIndex, submitterName, task.conceptNumber, task.photoIndex)
                 );
                 
                 // 모든 업로드 완료 대기
@@ -873,10 +1110,12 @@
                     const elapsedTime = (Date.now() - uploadStats.startTime) / 1000;
                     const speed = (uploadStats.totalSize / 1024 / 1024) / elapsedTime;
                     
+                    const conceptCounts = concepts.filter(c => c.files.length > 0).length;
+                    
                     showStatusMessage('success', 
-                        `🎉 Firebase 업로드 완료!\n` +
+                        `🎉 업로드 완료!\n` +
                         `성공: ${successful}개${failed > 0 ? `, 실패: ${failed}개` : ''}\n` +
-                        `제출자: ${submitterName} | 제품: ${selectedProduct} | 컨셉: ${conceptNumber}\n` +
+                        `제출자: ${submitterName} | 제품: ${selectedProduct} | ${conceptCounts}개 컨셉\n` +
                         `⚡ 평균 속도: ${speed.toFixed(1)} MB/s`
                     );
                     
@@ -890,13 +1129,13 @@
                 console.error('업로드 실패:', error);
                 showStatusMessage('error', `❌ 업로드 실패: ${error.message}`);
                 document.getElementById('uploadBtn').disabled = false;
-                document.getElementById('uploadBtn').textContent = '🔥 Firebase로 초고속 업로드 시작!';
+                document.getElementById('uploadBtn').textContent = '🚀 빠른 업로드 시작!';
             }
         };
 
         // 단일 파일 업로드
-        async function uploadSingleFile(file, index, submitterName, conceptNumber) {
-            const fileName = `${submitterName}_${getCurrentDate()}_${selectedProduct}_컨셉${conceptNumber}_${String(index + 1).padStart(3, '0')}_${file.name}`;
+        async function uploadSingleFile(file, index, submitterName, conceptNumber, photoIndex) {
+            const fileName = `${submitterName}_${getCurrentDate()}_${selectedProduct}_컨셉${conceptNumber}_${String(photoIndex).padStart(3, '0')}_${file.name}`;
             const filePath = `product-photos/${selectedProduct}/${submitterName}_컨셉${conceptNumber}/${fileName}`;
             
             return new Promise((resolve, reject) => {
@@ -928,12 +1167,12 @@
                             updateUploadStats(uploadStats.total, uploadStats.completed, uploadStats.totalSize);
                             
                             console.log(`✅ 파일 업로드 완료: ${fileName}`);
-                            console.log(`📁 다운로드 URL: ${downloadURL}`);
                             
                             resolve({
                                 fileName: fileName,
                                 downloadURL: downloadURL,
-                                path: filePath
+                                path: filePath,
+                                conceptNumber: conceptNumber
                             });
                         } catch (error) {
                             console.error('다운로드 URL 생성 실패:', error);
@@ -991,8 +1230,20 @@
                 return false;
             }
             
-            if (selectedFiles.length === 0) {
-                showStatusMessage('error', '❌ 업로드할 파일을 선택해주세요.');
+            // 컨셉별 파일 검증
+            let hasFiles = false;
+            for (let i = 0; i < concepts.length; i++) {
+                if (concepts[i].files.length > 0) {
+                    hasFiles = true;
+                    if (concepts[i].files.length < 3) {
+                        showStatusMessage('error', `❌ 컨셉 ${i + 1}에는 최소 3장의 사진이 필요합니다.`);
+                        return false;
+                    }
+                }
+            }
+            
+            if (!hasFiles) {
+                showStatusMessage('error', '❌ 최소 1개 컨셉에 사진을 업로드해주세요.');
                 return false;
             }
             
@@ -1026,11 +1277,12 @@
         }
 
         function resetForm() {
-            selectedFiles = [];
+            concepts = [];
             selectedProduct = '';
+            conceptCount = 0;
             
             document.getElementById('submitterName').value = '';
-            document.getElementById('conceptNumber').value = '1';
+            document.getElementById('conceptsContainer').innerHTML = '';
             document.getElementById('fileList').style.display = 'none';
             document.getElementById('uploadSummary').classList.remove('active');
             document.getElementById('statusMessage').style.display = 'none';
@@ -1043,6 +1295,9 @@
                 input.checked = false;
             });
             
+            // 첫 번째 컨셉 자동 추가
+            addConcept();
+            
             updateUploadButton();
         }
 
@@ -1052,7 +1307,7 @@
         // 페이지 로드 시 Firebase 초기화
         initializeFirebase();
         
-        console.log('🔥 Firebase 업로드 시스템 준비 완료!');
+        console.log('🚀 업로드 시스템 준비 완료!');
     </script>
 </body>
 </html>
