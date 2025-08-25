@@ -487,12 +487,12 @@
 
             <!-- 일괄 다운로드 -->
             <div class="bulk-download">
-                <h3>🚀 모든 파일 한번에 다운로드</h3>
+                <h3>📦 모든 파일 압축 다운로드</h3>
                 <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">
-                    ⚠️ 많은 파일을 다운로드할 때는 브라우저에서 팝업을 허용해주세요
+                    🗂️ 폴더 구조를 유지한 채로 ZIP 파일로 다운로드됩니다
                 </p>
                 <button class="bulk-download-btn" onclick="downloadAll()" id="downloadAllBtn" disabled>
-                    📥 전체 파일 다운로드 (<span id="totalFileCount">0</span>개)
+                    📥 전체 파일 압축 다운로드 (<span id="totalFileCount">0</span>개)
                 </button>
             </div>
 
@@ -532,6 +532,11 @@
         </div>
     </div>
 
+    <!-- JSZip 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- FileSaver 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
     <!-- Firebase SDK v9+ -->
     <script type="module">
         // Firebase v9+ 모듈 import
@@ -744,7 +749,7 @@
                         </div>
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <button class="download-btn" onclick="event.stopPropagation(); downloadProduct('${productName}')">
-                                📥 전체 다운로드
+                                📦 ZIP 다운로드
                             </button>
                             <button class="product-toggle" id="toggle_${productName}">▼</button>
                         </div>
@@ -782,7 +787,7 @@
                         </div>
                     </div>
                     <button class="download-btn" onclick="downloadConcept('${concept.productName}', '${concept.name}')">
-                        📥 컨셉 전체
+                        📦 압축 다운로드
                     </button>
                 </div>
             `).join('');
@@ -802,7 +807,7 @@
             }
         };
 
-        // Firebase Storage에서 확실한 PC 다운로드
+        // Firebase Storage에서 확실한 PC 다운로드 (새창 방지)
         async function downloadFileFromFirebase(file, customFileName = null) {
             const fileName = customFileName || file.name;
             console.log(`📥 다운로드 시작: ${fileName}`);
@@ -817,25 +822,8 @@
                     throw new Error('다운로드 URL 없음');
                 }
 
-                // 방법 1: 가장 간단한 방식 - 직접 다운로드 링크
-                console.log(`🔗 다운로드 URL: ${downloadURL}`);
-                
-                const tempLink = document.createElement('a');
-                tempLink.href = downloadURL;
-                tempLink.download = fileName;
-                tempLink.target = '_blank';
-                tempLink.rel = 'noopener';
-                
-                // 사용자 제스처 이벤트로 실행
-                document.body.appendChild(tempLink);
-                tempLink.click();
-                document.body.removeChild(tempLink);
-                
-                console.log(`✅ 직접 링크 다운로드 시도: ${fileName}`);
-                
-                // 1초 후 Blob 방식으로 백업 실행
-                setTimeout(() => downloadWithBlob(downloadURL, fileName), 1000);
-                
+                // Blob 방식으로만 다운로드 (새창 방지)
+                await downloadWithBlob(downloadURL, fileName);
                 return true;
 
             } catch (error) {
@@ -844,40 +832,34 @@
             }
         }
 
-        // Blob 방식 백업 다운로드
+        // Blob 방식 다운로드 (새창 방지 버전)
         async function downloadWithBlob(url, fileName) {
             try {
-                console.log(`🔄 Blob 방식으로 재시도: ${fileName}`);
+                console.log(`🔄 파일 다운로드: ${fileName}`);
                 
-                // 프록시를 통한 다운로드 시도
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-                
+                // CORS 문제 해결을 위한 프록시 시도
                 let response;
                 try {
+                    // 먼저 직접 fetch 시도
+                    response = await fetch(url, { 
+                        method: 'GET',
+                        headers: {
+                            'Accept': '*/*',
+                        }
+                    });
+                } catch (corsError) {
+                    console.log('CORS 오류, 프록시 사용');
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
                     response = await fetch(proxyUrl);
-                } catch (proxyError) {
-                    console.log('프록시 실패, 직접 fetch 시도');
-                    response = await fetch(url, { mode: 'no-cors' });
                 }
                 
-                if (response.ok || response.type === 'opaque') {
+                if (response.ok) {
                     const blob = await response.blob();
                     
                     if (blob.size > 0) {
-                        const blobUrl = URL.createObjectURL(blob);
-                        
-                        const link = document.createElement('a');
-                        link.href = blobUrl;
-                        link.download = fileName;
-                        link.style.display = 'none';
-                        
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        
-                        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-                        
-                        console.log(`✅ Blob 다운로드 성공: ${fileName}`);
+                        // FileSaver.js 사용하여 확실한 다운로드
+                        saveAs(blob, fileName);
+                        console.log(`✅ 다운로드 완료: ${fileName}`);
                     } else {
                         throw new Error('빈 파일');
                     }
@@ -885,99 +867,119 @@
                     throw new Error(`HTTP ${response.status}`);
                 }
                 
-            } catch (blobError) {
-                console.log(`❌ Blob 다운로드 실패: ${fileName}`, blobError);
-                
-                // 최종 방법: iframe으로 강제 다운로드
-                try {
-                    console.log(`🔧 iframe 방식 시도: ${fileName}`);
-                    
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = url;
-                    
-                    document.body.appendChild(iframe);
-                    
-                    setTimeout(() => {
-                        try {
-                            document.body.removeChild(iframe);
-                        } catch (e) {}
-                    }, 5000);
-                    
-                } catch (iframeError) {
-                    console.error(`iframe 방식 실패: ${fileName}`, iframeError);
-                }
+            } catch (error) {
+                console.error(`❌ 다운로드 실패: ${fileName}`, error);
+                throw error;
             }
         }
 
-        // 여러 파일 다운로드 - 간단하고 확실한 방식
-        async function downloadMultipleFiles(files, title) {
+        // 압축파일로 다운로드 (폴더 구조 유지)
+        async function downloadAsZip(files, zipName, folderStructure = true) {
             if (!files || files.length === 0) {
                 alert('다운로드할 파일이 없습니다.');
                 return;
             }
 
-            console.log(`📥 ${files.length}개 파일 다운로드 시작`);
-            showDownloadModal(title, files.length);
+            console.log(`📦 ZIP 파일 생성 시작: ${zipName}`);
+            showDownloadModal(`${zipName} 압축 중...`, files.length);
             
+            const zip = new JSZip();
             let completed = 0;
+            let failed = 0;
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                updateDownloadStatus(`다운로드 중 (${i + 1}/${files.length}): ${file.name}`);
-                
-                console.log(`📂 ${i + 1}/${files.length} 처리: ${file.name}`);
+                updateDownloadStatus(`파일 처리 중 (${i + 1}/${files.length}): ${file.name}`);
                 
                 try {
-                    await downloadFileFromFirebase(file);
-                    completed++;
-                    console.log(`✅ 완료 (${completed}/${files.length}): ${file.name}`);
+                    let downloadURL = file.downloadURL;
+                    if (!downloadURL && file.ref) {
+                        downloadURL = await getDownloadURL(file.ref);
+                    }
+
+                    if (!downloadURL) {
+                        throw new Error('다운로드 URL 없음');
+                    }
+
+                    // 파일 데이터 가져오기
+                    let response;
+                    try {
+                        response = await fetch(downloadURL);
+                    } catch (corsError) {
+                        console.log('CORS 오류, 프록시 사용');
+                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(downloadURL)}`;
+                        response = await fetch(proxyUrl);
+                    }
+
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        
+                        // 폴더 구조 생성
+                        let filePath;
+                        if (folderStructure && file.folderPath) {
+                            filePath = `${file.folderPath}/${file.name}`;
+                        } else if (folderStructure && file.fullPath) {
+                            // Firebase fullPath에서 폴더 구조 추출
+                            const pathParts = file.fullPath.split('/');
+                            if (pathParts.length > 1) {
+                                pathParts.shift(); // 'product-photos' 제거
+                                filePath = pathParts.join('/');
+                            } else {
+                                filePath = file.name;
+                            }
+                        } else {
+                            filePath = file.customName || file.name;
+                        }
+                        
+                        zip.file(filePath, blob);
+                        completed++;
+                        console.log(`✅ ZIP 추가 완료 (${completed}/${files.length}): ${filePath}`);
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
                 } catch (error) {
-                    console.log(`⚠️ 실패 (${i + 1}/${files.length}): ${file.name}`);
+                    console.error(`❌ 파일 처리 실패: ${file.name}`, error);
+                    failed++;
                 }
                 
                 updateDownloadProgress(i + 1, files.length);
-                
-                // 다운로드 간격 - 브라우저 과부하 방지
-                if (i < files.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                }
             }
 
-            // 완료 처리
-            setTimeout(() => {
-                hideDownloadModal();
+            // ZIP 파일 생성 및 다운로드
+            try {
+                updateDownloadStatus('압축 파일 생성 중...');
+                console.log(`📦 ZIP 파일 생성 중... (성공: ${completed}, 실패: ${failed})`);
                 
-                const message = `💾 다운로드 처리 완료!\n\n` +
-                    `📁 총 ${files.length}개 파일 처리됨\n` +
-                    `📂 브라우저 다운로드 폴더를 확인해보세요\n\n` +
-                    `💡 파일이 보이지 않는다면:\n` +
-                    `1. Ctrl+J (다운로드 창 열기)\n` +
-                    `2. 브라우저 팝업 차단 해제\n` +
-                    `3. 개별 파일 다운로드 시도`;
+                const zipBlob = await zip.generateAsync({
+                    type: "blob",
+                    compression: "DEFLATE",
+                    compressionOptions: { level: 6 }
+                });
                 
-                alert(message);
+                // FileSaver.js로 다운로드
+                saveAs(zipBlob, `${zipName}.zip`);
                 
-                // 다운로드 창 열기 제안
-                if (confirm('브라우저 다운로드 창을 여시겠습니까?')) {
-                    try {
-                        // 브라우저별 다운로드 페이지
-                        if (navigator.userAgent.includes('Chrome') || navigator.userAgent.includes('Edge')) {
-                            window.open('chrome://downloads/', '_blank');
-                        } else if (navigator.userAgent.includes('Firefox')) {
-                            // Firefox는 단축키만 가능
-                            alert('Firefox: Ctrl+Shift+Y를 눌러 다운로드 창을 열어보세요');
-                        } else {
-                            alert('다운로드 폴더나 브라우저 다운로드 메뉴를 확인해보세요');
-                        }
-                    } catch (e) {
-                        console.log('다운로드 창 열기 실패');
-                    }
-                }
-            }, 1000);
+                console.log(`✅ ZIP 다운로드 완료: ${zipName}.zip`);
+                
+            } catch (zipError) {
+                console.error('❌ ZIP 생성 실패:', zipError);
+                alert('압축 파일 생성에 실패했습니다.');
+            }
+
+            hideDownloadModal();
+
+            // 결과 안내
+            const message = `📦 압축 다운로드 완료!\n\n` +
+                `📁 파일명: ${zipName}.zip\n` +
+                `✅ 성공: ${completed}개 파일\n` +
+                `❌ 실패: ${failed}개 파일\n\n` +
+                `💾 브라우저 다운로드 폴더를 확인해보세요!`;
+            
+            alert(message);
         }
 
-        // 단일 파일 다운로드 (테스트용)
+        // 단일 파일 다운로드 (새창 방지)
         window.downloadSingleFile = async function(productName, conceptName, fileName) {
             const product = allData[productName];
             const concept = product?.concepts.find(c => c.name === conceptName);
@@ -991,20 +993,20 @@
             console.log(`🎯 단일 파일 다운로드 요청: ${fileName}`);
             showDownloadModal(`${fileName} 다운로드`, 1);
             
-            // 파일명에 컨셉명 포함
-            const customFileName = `${conceptName}_${fileName}`;
-            const success = await downloadFileFromFirebase(file, customFileName);
-            
-            hideDownloadModal();
-
-            if (success) {
+            try {
+                // 파일명에 컨셉명 포함
+                const customFileName = `${conceptName}_${fileName}`;
+                await downloadFileFromFirebase(file, customFileName);
                 console.log(`✅ 파일 다운로드 완료: ${customFileName}`);
-            } else {
+            } catch (error) {
+                console.error(`❌ 파일 다운로드 실패: ${fileName}`, error);
                 alert(`❌ 파일 다운로드 실패: ${fileName}\n\n개발자 도구(F12)의 Console 탭에서 오류를 확인해보세요.`);
             }
+            
+            hideDownloadModal();
         };
 
-        // 컨셉 다운로드
+        // 컨셉 다운로드 (압축파일로)
         window.downloadConcept = function(productName, conceptName) {
             const product = allData[productName];
             const concept = product?.concepts.find(c => c.name === conceptName);
@@ -1014,10 +1016,17 @@
                 return;
             }
 
-            downloadMultipleFiles(concept.files, `${conceptName} 다운로드`);
+            // 폴더 구조를 위한 파일 정보 추가
+            const filesWithPath = concept.files.map(file => ({
+                ...file,
+                folderPath: `${productName}/${conceptName}`,
+                customName: file.name
+            }));
+
+            downloadAsZip(filesWithPath, `${productName}_${conceptName}`, true);
         };
 
-        // 제품 전체 다운로드
+        // 제품 전체 다운로드 (압축파일로)
         window.downloadProduct = function(productName) {
             const product = allData[productName];
             if (!product) {
@@ -1028,27 +1037,29 @@
             const allFiles = product.concepts.flatMap(concept => 
                 concept.files.map(file => ({
                     ...file,
-                    name: `${concept.name}_${file.name}` // 컨셉명_파일명 형태로 저장
+                    folderPath: `${productName}/${concept.name}`,
+                    customName: file.name
                 }))
             );
             
-            downloadMultipleFiles(allFiles, `${productName} 전체 다운로드`);
+            downloadAsZip(allFiles, productName, true);
         };
 
-        // 전체 다운로드
+        // 전체 다운로드 (압축파일로)
         window.downloadAll = function() {
             const allFiles = Object.entries(allData)
                 .flatMap(([productName, product]) => 
                     product.concepts.flatMap(concept => 
                         concept.files.map(file => ({
                             ...file,
-                            name: `${productName}_${concept.name}_${file.name}` // 제품명_컨셉명_파일명
+                            folderPath: `${productName}/${concept.name}`,
+                            customName: file.name
                         }))
                     )
                 );
             
-            if (confirm(`총 ${allFiles.length}개 파일을 다운로드하시겠습니까?\n파일명 형식: 제품명_컨셉명_원본파일명`)) {
-                downloadMultipleFiles(allFiles, '전체 파일 다운로드');
+            if (confirm(`총 ${allFiles.length}개 파일을 압축파일로 다운로드하시겠습니까?\n폴더 구조: 제품명/컨셉명/파일명`)) {
+                downloadAsZip(allFiles, 'product-photos-all', true);
             }
         };
 
@@ -1163,7 +1174,7 @@
         // 페이지 로드 시 초기화
         initializeFirebase();
 
-        console.log('📁 Firebase v9+ 다운로드 매니저 준비 완료!');
+        console.log('📁 Firebase v9+ ZIP 다운로드 매니저 준비 완료!');
     </script>
 </body>
 </html>
